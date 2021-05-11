@@ -6,6 +6,10 @@ define alignment=1;
 define space ram type=ram_space size=4 default;
 define space register type=register_space size=2;
 
+# Define the space for auxiliary registers as "RAM space" in order to be able to
+# access it by address (instructions lr and sr)
+define space auxregs type=ram_space size=2;
+
 # 64 32-bit registers:
 # * r0...r25 = Basecase Core Registers
 # * r26 = Global Pointer
@@ -29,13 +33,11 @@ define register offset=0x00 size=4 [
     r48 r49 r50 r51 r52 r53 r54 r55 r56 mlo mmid mhi lp_count r61reserved r62limm pcl
 ];
 
-define register offset=0x120 size=4 [ status32 ]; # status register
-define register offset=0x130 size=1 [ Z N C V ]; # Bits of the status register: Zero, Negative, Carry, Overflow
+# Bits of the STATUS32 register: Zero, Negative, Carry, Overflow
+define register offset=0x120 size=1 [ Z N C V ];
 
-define register offset=0x140 size=4 [ lp_start ]; # loop register
-define register offset=0x148 size=1 [ is_in_loop ];
-
-define register offset=0x200 size=4 [ contextreg ];
+define register offset=0x130 size=1 [ is_in_loop ];
+define register offset=0x134 size=4 [ contextreg ];
 
 define context contextreg
   phase = (0,0)
@@ -50,13 +52,7 @@ define pcodeop asm_instruction_07;
 define pcodeop asm_instruction_08;
 define pcodeop brk;
 define pcodeop ext_condition;
-define pcodeop get_AUXREG;
-define pcodeop get_STATUS32;
-define pcodeop get_STATUS_L1;
-define pcodeop get_STATUS_L2;
 define pcodeop rtie;
-define pcodeop set_AUXREG;
-define pcodeop set_STATUS32;
 define pcodeop sleep;
 define pcodeop swi;
 define pcodeop sync;
@@ -360,7 +356,8 @@ op4_ld_ra: l_ra_raw is l_ra_raw { export l_ra_raw; }
   if (is_in_loop == 0) goto <end_loop>;
   lp_count = lp_count - 1;
   if (lp_count == 0) goto <end_loop>;
-  pcl = lp_start;
+  # Load LP_START
+  pcl = *[auxregs]:4 (0x08:2);
   goto [pcl];
 <end_loop>
   is_in_loop = 0;
@@ -928,7 +925,8 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
   return [pcl];
 }
 :j^op4_cond^".f" ilink1 is op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x20 & l_flag=1 & (l_op_format=0 | (l_op_format=3 & l_m=0)) & l_rc_raw=29 & op4_cond & ilink1 {
-  local new_status:4 = get_STATUS_L1();
+  # get STATUS_L1 register at 0x0b * 4 = 0x2c
+  local new_status:4 = *[auxregs]:4 (0x2c:2);
   Z = (new_status & (1 << 11)) != 0;
   N = (new_status & (1 << 10)) != 0;
   C = (new_status & (1 << 9)) != 0;
@@ -937,7 +935,8 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
   goto [pcl];
 }
 :j^op4_cond^".f" ilink2 is op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x20 & l_flag=1 & (l_op_format=0 | (l_op_format=3 & l_m=0)) & l_rc_raw=30 & op4_cond & ilink2 {
-  local new_status:4 = get_STATUS_L2();
+  # get STATUS_L2 register at 0x0c * 4 = 0x30
+  local new_status:4 = *[auxregs]:4 (0x30:2);
   Z = (new_status & (1 << 11)) != 0;
   N = (new_status & (1 << 10)) != 0;
   C = (new_status & (1 << 9)) != 0;
@@ -1002,20 +1001,25 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
   # Loop Set Up (Conditional)
   is_in_loop = 0;
   if (l_cc_not_value) goto op4_lp_loop_end;
-  lp_start = inst_next;
+  # Write LP_START and LP_END registers
+  *[auxregs]:4 (0x08:2) = inst_next;
+  *[auxregs]:4 (0x0c:2) = &op4_lp_loop_end;
   is_in_loop = 1;
 }
 :lp op4_lp_loop_end is op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x28 & l_flag=0 & l_op_format=2 & op4_lp_loop_end
   [ loopEnd = 1; globalset(op4_lp_loop_end, loopEnd); ]
 {
   # Loop Set Up (Unconditional)
-  lp_start = inst_next;
+  # Write LP_START and LP_END registers
+  *[auxregs]:4 (0x08:2) = inst_next;
+  *[auxregs]:4 (0x0c:2) = &op4_lp_loop_end;
   is_in_loop = 1;
 }
 
 with : op4_phase=1 & l_major_opcode=0x04 ... {
   :flag^op4_dotcond op4_c_src is (l_sub_opcode6=0x29 & l_flag=0 & op4_dotcond) ... & op4_c_src {
-    set_STATUS32(op4_c_src);
+    # set STATUS32 register at 0x0a * 4 = 0x28
+    *[auxregs]:4 (0x28:2) = op4_c_src;
     Z = (op4_c_src & (1:4 << 11)) != 0;
     N = (op4_c_src & (1:4 << 10)) != 0;
     C = (op4_c_src & (1:4 << 9)) != 0;
@@ -1023,13 +1027,10 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
   }
 
   :lr op4_b_dst, [op4_c_src] is (l_sub_opcode6=0x2a & l_flag=0 & (l_op_format=0 | l_op_format=1 | l_op_format=2) & op4_b_dst) ... & op4_c_src {
-    op4_b_dst = get_AUXREG(op4_c_src);
-  }
-  :lr op4_b_dst, [status32] is (l_sub_opcode6=0x2a & l_flag=0 & op4_b_dst & l_op_format=1 & l_u6=0x0a & status32) ... {
-    op4_b_dst = get_STATUS32(Z, N, C, V);
+    op4_b_dst = *[auxregs]:4 (op4_c_src:2 << 2:2);
   }
   :sr op4_b_src, [op4_c_src] is (l_sub_opcode6=0x2b & l_flag=0 & (l_op_format=0 | l_op_format=1 | l_op_format=2)) ... & op4_b_src & op4_c_src {
-    set_AUXREG(op4_c_src, op4_b_src);
+    *[auxregs]:4 (op4_c_src:2 << 2:2) = op4_b_src;
   }
 
   # Single Operand Instructions, 0x04, [0x2F, 0x00 - 0x3F]
