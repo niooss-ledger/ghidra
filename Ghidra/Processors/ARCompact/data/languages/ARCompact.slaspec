@@ -54,8 +54,6 @@ define pcodeop get_AUXREG;
 define pcodeop get_STATUS32;
 define pcodeop get_STATUS_L1;
 define pcodeop get_STATUS_L2;
-define pcodeop max;
-define pcodeop min;
 define pcodeop norm; # normalization integer for the signed value
 define pcodeop rtie;
 define pcodeop set_AUXREG;
@@ -732,18 +730,26 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
     update_flags_zn(op4_a);
   }
   :max^op4_dotcond op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x08 & l_flag=0 & op4_dotcond & op4_a) ... & op4_b_src & op4_c_src {
-    op4_a = max(op4_b_src, op4_c_src);
+    local c_greatereq_b:1 = op4_c_src s>= op4_b_src;
+    op4_a = op4_b_src * zext(c_greatereq_b == 0:1) + op4_c_src * zext(c_greatereq_b);
   }
   :max^op4_dotcond^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x08 & l_flag=1 & op4_dotcond & op4_a) ... & op4_b_src & op4_c_src {
-    op4_a = max(op4_b_src, op4_c_src);
-    update_flags_zn(op4_a);
+    Z = op4_c_src == op4_b_src;
+    N = (op4_b_src - op4_c_src) s< 0:4;
+    C = op4_c_src s>= op4_b_src;
+    V = sborrow(op4_b_src, op4_c_src);
+    op4_a = op4_b_src * zext(C == 0:1) + op4_c_src * zext(C);
   }
   :min^op4_dotcond op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x09 & l_flag=0 & op4_dotcond & op4_a) ... & op4_b_src & op4_c_src {
-    op4_a = min(op4_b_src, op4_c_src);
+    local c_lowereq_b:1 = op4_c_src s<= op4_b_src;
+    op4_a = op4_b_src * zext(c_lowereq_b == 0:1) + op4_c_src * zext(c_lowereq_b);
   }
   :min^op4_dotcond^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x09 & l_flag=1 & op4_dotcond & op4_a) ... & op4_b_src & op4_c_src {
-    op4_a = min(op4_b_src, op4_c_src);
-    update_flags_zn(op4_a);
+    Z = op4_c_src == op4_b_src;
+    N = (op4_b_src - op4_c_src) s< 0:4;
+    C = op4_c_src s<= op4_b_src;
+    V = sborrow(op4_b_src, op4_c_src);
+    op4_a = op4_b_src * zext(C == 0:1) + op4_c_src * zext(C);
   }
   :mov^op4_dotcond op4_b_dst, op4_c_src is (l_sub_opcode6=0x0a & l_flag=0 & op4_b_dst & op4_dotcond) ... & op4_c_src {
     op4_b_dst = op4_c_src;
