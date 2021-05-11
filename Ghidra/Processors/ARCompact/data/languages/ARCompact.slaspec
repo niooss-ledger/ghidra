@@ -54,7 +54,6 @@ define pcodeop get_AUXREG;
 define pcodeop get_STATUS32;
 define pcodeop get_STATUS_L1;
 define pcodeop get_STATUS_L2;
-define pcodeop norm; # normalization integer for the signed value
 define pcodeop rtie;
 define pcodeop set_AUXREG;
 define pcodeop set_STATUS32;
@@ -99,6 +98,30 @@ macro cond_goto_with_delayslot(do_not_take_branch, target) {
   delayslot(1);
   if (_do_not_take_branch) goto inst_next;
   goto target;
+}
+
+# Normalization of signed 32-bit integers:
+# * norm(0) = 31
+# * if x s> 0, norm(x) = clz(x) - 1, with clz being "count leading zeros"
+# * if x s< 0, norm(x) = norm(~x)
+macro compute_norm4(result, value) {
+  local abs_value:4 = value;
+  if (value s>= 0:4) goto <nonnegative_value>;
+  abs_value = ~value;
+<nonnegative_value>
+  if (abs_value != 0:4) goto <not_zero>;
+  result = 31:4;
+  goto <end_norm>;
+<not_zero>
+  local count:4 = 0:4;
+<norm_loop>
+  if (count == 30:4) goto <return_count>;
+  if ((1:4 << (30:4 - count)) <= abs_value) goto <return_count>;
+  count = count + 1:4;
+  goto <norm_loop>;
+<return_count>
+  result = count;
+<end_norm>
 }
 
 # Short opcodes (major opcode between 0x0c and 0x1f)
@@ -1344,11 +1367,11 @@ with : op4_phase=1 & l_major_opcode=0x05 ... {
   with : (l_sub_opcode6=0x2f & (l_op_format=0 | l_op_format=1)) ... {
     :swap op4_b_dst, op4_c_src is (l_ra_raw=0x00 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :norm op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=0 & op4_b_dst) ... & op4_c_src {
-      op4_b_dst = norm(op4_c_src);
+      compute_norm4(op4_b_dst, op4_c_src);
     }
     :norm^".f" op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=1 & op4_b_dst) ... & op4_c_src {
       update_flags_zn(op4_c_src);
-      op4_b_dst = norm(op4_c_src);
+      compute_norm4(op4_b_dst, op4_c_src);
     }
     :sat16 op4_b_dst, op4_c_src is (l_ra_raw=0x02 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :rnd16 op4_b_dst, op4_c_src is (l_ra_raw=0x03 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
