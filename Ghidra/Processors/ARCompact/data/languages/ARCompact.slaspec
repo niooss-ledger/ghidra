@@ -255,7 +255,7 @@ l_ldst_mem_rb_s9: [l_rb_limm] is (l_s9_low8=0 & l_s9_highbit=0) ... & l_rb_limm 
 l_ldst_mem_rb_s9: [l_rb_limm, l_s9] is l_s9 ... & l_rb_limm { local tmp:4 = l_rb_limm + l_s9; export tmp; }
 
 # Compute branch target or data location for various instructions
-op1_1_target: target is l_s_low_b17b23 & l_s9_highbit  [ target=(inst_start & ~3) + (l_s_low_b17b23 << 1) + (l_s9_highbit << 8); ] { export *[ram]:4 target; }
+op1_1_target: target is l_s_low_b17b23 & l_s9_highbit [ target=(inst_start & ~3) + (l_s_low_b17b23 << 1) + (l_s9_highbit << 8); ] { export *[ram]:4 target; }
 l_target_s19shift2: target is l_s19_low9 & l_s19_high10 [ target=(inst_start & ~3) + (l_s19_low9 << 2) + (l_s19_high10 << 11); ] { export *[ram]:4 target; }
 l_target_s20shift1: target is l_s20_low10 & l_s20_high10 [ target=(inst_start & ~3) + (l_s20_low10 << 1) + (l_s20_high10 << 11); ] { export *[ram]:4 target; }
 l_target_s23shift2: target is l_s19_low9 & l_s23_middle10 & l_s23_high [ target=(inst_start & ~3) + (l_s19_low9 << 2) + (l_s23_middle10 << 11) + (l_s23_high << 21); ] { export *[ram]:4 target; }
@@ -654,7 +654,7 @@ with : phase=1 {
   build instruction;
 }
 :^instruction is op4_phase=0 & ((l_major_opcode=0x04 & l_sub_opcode6!=0x28 & l_op4_ld_opcode!=6) | l_major_opcode=0x05 | l_major_opcode=0x06 | l_major_opcode=0x07 | l_major_opcode=0x08) & l_op_format=3 & l_cc_not_value & instruction [ op4_phase = 1; ] {
-  # Do not use "goto inst_next", as this does not have the right semantics when the intruction appears in a delay slot.
+  # Do not use "goto inst_next", as this does not have the right semantics when the instruction appears in a delay slot.
   if (l_cc_not_value) goto <next>;
   build instruction;
 <next>
