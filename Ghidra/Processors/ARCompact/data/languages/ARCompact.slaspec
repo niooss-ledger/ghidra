@@ -95,6 +95,14 @@ macro update_flags_sub_zncv(op1, op2, result) {
   V = sborrow(op1, op2);
 }
 
+# Conditional branch with delay slot
+macro cond_goto_with_delayslot(do_not_take_branch, target) {
+  local _do_not_take_branch:1 = do_not_take_branch;
+  delayslot(1);
+  if (_do_not_take_branch) goto inst_next;
+  goto target;
+}
+
 # Short opcodes (major opcode between 0x0c and 0x1f)
 define token instr16 (16)
   s_major_opcode = (11, 15)
@@ -344,8 +352,9 @@ with : phase=1 {
   goto l_target_s20shift1;
 }
 :b^l_cc_not_value^".d" l_target_s20shift1 is l_major_opcode=0x00 & l_sub_opcode_b16=0 & l_delay_slot_b5=1 & l_target_s20shift1 & l_cc_not_value {
-  if (l_cc_not_value) goto inst_next;
+  local no_branch:1 = l_cc_not_value;
   delayslot(1);
+  if (no_branch) goto inst_next;
   goto l_target_s20shift1;
 }
 :b l_target_s20shift1 is l_major_opcode=0x00 & l_sub_opcode_b16=0 & l_delay_slot_b5=0 & l_target_s20shift1 & l_cond_bits=0 {
@@ -371,72 +380,56 @@ with : phase=1 {
   goto op1_1_target;
 }
 :breq.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x00 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm != l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm != l_rc_limm, op1_1_target);
 }
 :brne l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x01 & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if (l_rb_limm == l_rc_limm) goto inst_next;
   goto op1_1_target;
 }
 :brne.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x01 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm == l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm == l_rc_limm, op1_1_target);
 }
 :brlt l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x02 & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if (l_rb_limm s>= l_rc_limm) goto inst_next;
   goto op1_1_target;
 }
 :brlt.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x02 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm s>= l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm s>= l_rc_limm, op1_1_target);
 }
 :brge l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x03 & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if (l_rb_limm s< l_rc_limm) goto inst_next;
   goto op1_1_target;
 }
 :brge.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x03 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm s< l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm s< l_rc_limm, op1_1_target);
 }
 :brlo l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x04 & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if (l_rb_limm >= l_rc_limm) goto inst_next;
   goto op1_1_target;
 }
 :brlo.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x04 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm >= l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm >= l_rc_limm, op1_1_target);
 }
 :brhs l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x05 & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if (l_rb_limm < l_rc_limm) goto inst_next;
   goto op1_1_target;
 }
 :brhs.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x05 & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if (l_rb_limm < l_rc_limm) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm < l_rc_limm, op1_1_target);
 }
 :bbit0 l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x0e & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if ((l_rb_limm & (1 << l_rc_limm)) != 0) goto inst_next;
   goto op1_1_target;
 }
 :bbit0.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x0e & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if ((l_rb_limm & (1 << l_rc_limm)) != 0) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot((l_rb_limm & (1 << l_rc_limm)) != 0, op1_1_target);
 }
 :bbit1 l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x0f & l_delay_slot_b5=0 & op1_1_target) ... & l_rb_limm & l_rc_limm {
   if ((l_rb_limm & (1 << l_rc_limm)) == 0) goto inst_next;
   goto op1_1_target;
 }
 :bbit1.d l_rb_limm, l_rc_limm, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=0 & l_sub_opcode_b0b1b2b3=0x0f & l_delay_slot_b5=1 & op1_1_target) ... & l_rb_limm & l_rc_limm {
-  if ((l_rb_limm & (1 << l_rc_limm)) == 0) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot((l_rb_limm & (1 << l_rc_limm)) == 0, op1_1_target);
 }
 
 # Branch on Compare/Bit Test Register-Immediate, 0x01, [0x1, 0x1]
@@ -445,72 +438,56 @@ with : phase=1 {
   goto op1_1_target;
 }
 :breq.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x00 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm != l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm != l_u6, op1_1_target);
 }
 :brne l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x01 & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if (l_rb_limm == l_u6) goto inst_next;
   goto op1_1_target;
 }
 :brne.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x01 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm == l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm == l_u6, op1_1_target);
 }
 :brlt l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x02 & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if (l_rb_limm s>= l_u6) goto inst_next;
   goto op1_1_target;
 }
 :brlt.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x02 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm s>= l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm s>= l_u6, op1_1_target);
 }
 :brge l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x03 & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if (l_rb_limm s< l_u6) goto inst_next;
   goto op1_1_target;
 }
 :brge.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x03 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm s< l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm s< l_u6, op1_1_target);
 }
 :brlo l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x04 & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if (l_rb_limm >= l_u6) goto inst_next;
   goto op1_1_target;
 }
 :brlo.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x04 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm >= l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm >= l_u6, op1_1_target);
 }
 :brhs l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x05 & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if (l_rb_limm < l_u6) goto inst_next;
   goto op1_1_target;
 }
 :brhs.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x05 & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if (l_rb_limm < l_u6) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot(l_rb_limm < l_u6, op1_1_target);
 }
 :bbit0 l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x0e & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if ((l_rb_limm & (1 << l_u6)) != 0) goto inst_next;
   goto op1_1_target;
 }
 :bbit0.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x0e & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if ((l_rb_limm & (1 << l_u6)) != 0) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot((l_rb_limm & (1 << l_u6)) != 0, op1_1_target);
 }
 :bbit1 l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x0f & l_delay_slot_b5=0 & op1_1_target & l_u6) ... & l_rb_limm {
   if ((l_rb_limm & (1 << l_u6)) == 0) goto inst_next;
   goto op1_1_target;
 }
 :bbit1.d l_rb_limm, l_u6, op1_1_target is (l_major_opcode=0x01 & l_sub_opcode_b16=1 & l_sub_opcode_b4=1 & l_sub_opcode_b0b1b2b3=0x0f & l_delay_slot_b5=1 & op1_1_target & l_u6) ... & l_rb_limm {
-  if ((l_rb_limm & (1 << l_u6)) == 0) goto inst_next;
-  delayslot(1);
-  goto op1_1_target;
+  cond_goto_with_delayslot((l_rb_limm & (1 << l_u6)) == 0, op1_1_target);
 }
 
 # Branch and Link Conditionally, 0x01, [0x0, 0x0]
@@ -520,9 +497,10 @@ with : phase=1 {
   call l_target_s19shift2;
 }
 :bl^l_cc_not_value^".d" l_target_s19shift2 is l_major_opcode=0x01 & l_sub_opcode_b16=0 & l_sub_opcode_b17=0 & l_delay_slot_b5=1 & l_target_s19shift2 & l_cc_not_value {
-  if (l_cc_not_value) goto inst_next;
-  blink = inst_next;
+  local _l_cc_not_value:1 = l_cc_not_value;
   delayslot(1);
+  if (_l_cc_not_value) goto inst_next;
+  blink = inst_next;
   call l_target_s19shift2;
 }
 :bl l_target_s19shift2 is l_major_opcode=0x01 & l_sub_opcode_b16=0 & l_sub_opcode_b17=0 & l_delay_slot_b5=0 & l_target_s19shift2 & l_cond_bits=0 {
@@ -665,8 +643,12 @@ with : phase=1 {
 }
 
 # Decode instructions with opcode=0x04 to 0x08, with conditional execution.
-# Do not decode LP (l_sub_opcode6=0x28) and LD (l_op4_ld_opcode=6), as these instruction use special encoding.
-:^instruction is op4_phase=0 & ((l_major_opcode=0x04 & l_sub_opcode6!=0x28 & l_op4_ld_opcode!=6) | l_major_opcode=0x05 | l_major_opcode=0x06 | l_major_opcode=0x07 | l_major_opcode=0x08) & l_op_format!=3 & instruction [ op4_phase = 1; ] {
+# Do not decode instructions which do not follow "if (condition) do_something" semantics:
+# * Jcc.D (l_sub_opcode6=0x21): the instruction in the delay slot is always executed
+# * JLcc.D (l_sub_opcode6=0x23): the instruction in the delay slot is always executed
+# * LP (l_sub_opcode6=0x28): the loop is set up when the condition is true and the "branch" is taken when it is false
+# * LD (l_op4_ld_opcode=6): the format of the instruction is different
+:^instruction is op4_phase=0 & ((l_major_opcode=0x04 & l_sub_opcode6!=0x21 & l_sub_opcode6!=0x23 & l_sub_opcode6!=0x28 & l_op4_ld_opcode!=6) | l_major_opcode=0x05 | l_major_opcode=0x06 | l_major_opcode=0x07 | l_major_opcode=0x08) & l_op_format!=3 & instruction [ op4_phase = 1; ] {
   build instruction;
 }
 :^instruction is op4_phase=0 & ((l_major_opcode=0x04 & l_sub_opcode6!=0x28 & l_op4_ld_opcode!=6) | l_major_opcode=0x05 | l_major_opcode=0x06 | l_major_opcode=0x07 | l_major_opcode=0x08) & l_op_format=3 & l_cc_not_value & instruction [ op4_phase = 1; ] {
@@ -930,26 +912,55 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
   pcl = ilink2;
   goto [pcl];
 }
-:j^op4_cond^".d" op4_c_src is (op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & op4_cond) ... & op4_c_src {
+:j.d op4_c_src is (op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & l_op_format != 3) ... & op4_c_src {
   pcl = op4_c_src;
   delayslot(1);
   goto [pcl];
 }
-:j^op4_cond^".d" blink is op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & (l_op_format=0 | (l_op_format=3 & l_m=0)) & l_rc_raw=31 & op4_cond & blink {
+:j.d blink is op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & l_op_format=0 & l_rc_raw=31 & blink {
   pcl = blink;
   delayslot(1);
   return [pcl];
 }
+:j^l_cc_not_value^".d" op4_c_src is (op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & l_op_format=3 & l_cc_not_value) ... & op4_c_src {
+  local _l_cc_not_value:1 = l_cc_not_value;
+  local _op4_c_src:4 = op4_c_src;
+  delayslot(1);
+  if (_l_cc_not_value) goto <next>;
+  pcl = _op4_c_src;
+  goto [pcl];
+<next>
+}
+:j^l_cc_not_value^".d" blink is op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x21 & l_flag=0 & l_op_format=3 & l_m=0 & l_rc_raw=31 & l_cc_not_value & blink {
+  local _l_cc_not_value:1 = l_cc_not_value;
+  local _blink:4 = blink;
+  delayslot(1);
+  if (_l_cc_not_value) goto <next>;
+  pcl = _blink;
+  return [pcl];
+<next>
+}
+
 :jl^op4_cond op4_c_src is (op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x22 & l_flag=0 & op4_cond) ... & op4_c_src {
   blink = inst_next;
   pcl = op4_c_src;
   call [pcl];
 }
-:jl^op4_cond^".d" op4_c_src is (op4_phase=1 & l_major_opcode=0x04 & l_sub_opcode6=0x23 & l_flag=0 & op4_cond) ... & op4_c_src {
+:jl.d op4_c_src is (op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x23 & l_flag=0 & l_op_format != 3) ... & op4_c_src {
   blink = inst_next;
   pcl = op4_c_src;
   delayslot(1);
   call [pcl];
+}
+:jl^l_cc_not_value^".d" op4_c_src is (op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x23 & l_flag=0 & l_op_format=3 & l_cc_not_value) ... & op4_c_src {
+  local _l_cc_not_value:1 = l_cc_not_value;
+  local _op4_c_src:4 = op4_c_src;
+  delayslot(1);
+  if (_l_cc_not_value) goto <next>;
+  blink = inst_next;
+  pcl = _op4_c_src;
+  call [pcl];
+<next>
 }
 
 :lp^l_cc_not_value op4_lp_loop_end is op4_phase=0 & l_major_opcode=0x04 & l_sub_opcode6=0x28 & l_flag=0 & l_op_format=3 & l_m=1 & l_u6 & l_cc_not_value & op4_lp_loop_end
