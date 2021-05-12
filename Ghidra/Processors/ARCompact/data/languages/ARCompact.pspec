@@ -3,6 +3,9 @@
 <!-- See Relax specification: Ghidra/Framework/SoftwareModeling/data/languages/processor_spec.rxg -->
 
 <processor_spec>
+  <properties>
+    <property key="emulateInstructionStateModifierClass" value="ghidra.program.emulation.ARCompactEmulateInstructionStateModifier"/>
+  </properties>
   <programcounter register="pcl"/>
   <volatile outputop="set_AUXREG" inputop="get_AUXREG">
     <range space="auxregs" first="0x0" last="0x7"/>
