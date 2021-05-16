@@ -1,7 +1,7 @@
 # sleigh specification file for ARCompact
 
 define endian=little;
-define alignment=1;
+define alignment=2;
 
 define space ram type=ram_space size=4 default;
 define space register type=register_space size=2;
