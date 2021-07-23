@@ -7,7 +7,7 @@
     <property key="emulateInstructionStateModifierClass" value="ghidra.program.emulation.ARCompactEmulateInstructionStateModifier"/>
   </properties>
   <programcounter register="pcl"/>
-  <volatile outputop="set_AUXREG" inputop="get_AUXREG">
+  <volatile outputop="write_volatile" inputop="read_volatile">
     <range space="auxregs" first="0x0" last="0x7"/>
     <!-- do not mark LP_START and LP_END as volatile -->
     <range space="auxregs" first="0x10" last="0xFFFF"/>
