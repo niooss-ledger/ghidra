@@ -597,10 +597,10 @@ with : phase=1 {
 :st^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=0 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
   *[ram]:4 l_ldst_mem_rb_s9 = l_rc_limm;
 }
-:st^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=1 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
+:stb^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=1 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
   *[ram]:1 l_ldst_mem_rb_s9 = l_rc_limm:1;
 }
-:st^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=2 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
+:stw^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=2 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
   *[ram]:2 l_ldst_mem_rb_s9 = l_rc_limm:2;
 }
 
