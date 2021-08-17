@@ -519,60 +519,74 @@ with : phase=1 {
   l_ra_raw = sext(*[ram]:2 l_ldst_mem_rb_s9);
 }
 
-:ld.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+# For each instruction, add patterns with r62 (long immediate), which are invalid instructions
+:ld.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_rb = l_rb + l_s9;
   l_ra_raw = *[ram]:4 l_rb;
 }
-:ldb.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ld.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldb.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_rb = l_rb + l_s9;
   l_ra_raw = zext(*[ram]:1 l_rb);
 }
-:ldb.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldb.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldb.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_rb = l_rb + l_s9;
   l_ra_raw = sext(*[ram]:1 l_rb);
 }
-:ldw.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldb.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_rb = l_rb + l_s9;
   l_ra_raw = zext(*[ram]:2 l_rb);
 }
-:ldw.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldw.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_rb = l_rb + l_s9;
   l_ra_raw = sext(*[ram]:2 l_rb);
 }
+:ldw.x.a^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=1 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
 
-:ld.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ld.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_ra_raw = *[ram]:4 l_rb;
   l_rb = l_rb + l_s9;
 }
-:ldb.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ld.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldb.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_ra_raw = zext(*[ram]:1 l_rb);
   l_rb = l_rb + l_s9;
 }
-:ldb.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldb.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldb.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_ra_raw = zext(*[ram]:1 l_rb);
   l_rb = l_rb + l_s9;
 }
-:ldw.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldb.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=1 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_ra_raw = zext(*[ram]:2 l_rb);
   l_rb = l_rb + l_s9;
 }
-:ldw.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldw.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb {
   l_ra_raw = zext(*[ram]:2 l_rb);
   l_rb = l_rb + l_s9;
 }
+:ldw.x.ab^l_ld_di l_ra_raw, [l_rb, l_s9] is l_major_opcode=0x02 & l_ld_addr_mode=2 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
 
-:ld.as^l_ld_di l_ra_raw, [l_rb, l_s9shift2] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9shift2 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ld.as^l_ld_di l_ra_raw, [l_rb, l_s9shift2] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9shift2 & l_ld_di & l_ra_raw & l_rb {
   local addr:4 = l_rb + l_s9shift2;
   l_ra_raw = *[ram]:4 addr;
 }
-:ldw.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9shift1 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ld.as^l_ld_di l_ra_raw, [l_rb, l_s9shift2] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=0 & l_ld_sign_ext=0 & l_s9shift2 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9shift1 & l_ld_di & l_ra_raw & l_rb {
   local addr:4 = l_rb + l_s9shift1;
   l_ra_raw = zext(*[ram]:2 addr);
 }
-:ldw.x.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9shift1 & l_ld_di & l_ra_raw & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb {
+:ldw.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=0 & l_s9shift1 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
+:ldw.x.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9shift1 & l_ld_di & l_ra_raw & l_rb {
   local addr:4 = l_rb + l_s9shift1;
   l_ra_raw = sext(*[ram]:2 addr);
 }
+:ldw.x.as^l_ld_di l_ra_raw, [l_rb, l_s9shift1] is l_major_opcode=0x02 & l_ld_addr_mode=3 & l_ld_data_size=2 & l_ld_sign_ext=1 & l_s9shift1 & l_ld_di & l_ra_raw & l_rb_high=7 & l_rb_low_7=6 & l_rb unimpl
 
 # Store Register with Offset, 0x03
 :st^l_st_di l_rc_limm, l_ldst_mem_rb_s9 is (l_major_opcode=0x03 & l_st_addr_mode=0 & l_st_data_size=0 & l_st_di) ... & l_ldst_mem_rb_s9 & l_rc_limm {
@@ -585,40 +599,48 @@ with : phase=1 {
   *[ram]:2 l_ldst_mem_rb_s9 = l_rc_limm:2;
 }
 
-:st.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=0 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=0 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   l_rb = l_rb + l_s9;
   *[ram]:4 l_rb = l_rc_limm;
 }
-:stb.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=1 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=0 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+:stb.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=1 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   l_rb = l_rb + l_s9;
   *[ram]:1 l_rb = l_rc_limm:1;
 }
-:stw.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=2 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:stb.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=1 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+:stw.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=2 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   l_rb = l_rb + l_s9;
   *[ram]:2 l_rb = l_rc_limm:2;
 }
+:stw.a^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=1 & l_st_data_size=2 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
 
-:st.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=0 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=0 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   *[ram]:4 l_rb = l_rc_limm;
   l_rb = l_rb + l_s9;
 }
-:stb.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=1 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=0 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+:stb.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=1 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   *[ram]:1 l_rb = l_rc_limm:1;
   l_rb = l_rb + l_s9;
 }
-:stw.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=2 & l_s9 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:stb.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=1 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+:stw.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=2 & l_s9 & l_st_di & l_rb) ... & l_rc_limm {
   *[ram]:2 l_rb = l_rc_limm:2;
   l_rb = l_rb + l_s9;
 }
+:stw.ab^l_st_di l_rc_limm, [l_rb, l_s9] is (l_major_opcode=0x03 & l_st_addr_mode=2 & l_st_data_size=2 & l_s9 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
 
-:st.as^l_st_di l_rc_limm, [l_rb, l_s9shift2] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=0 & l_s9shift2 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.as^l_st_di l_rc_limm, [l_rb, l_s9shift2] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=0 & l_s9shift2 & l_st_di & l_rb) ... & l_rc_limm {
   local addr:4 = l_rb + l_s9shift2;
   *[ram]:4 addr = l_rc_limm;
 }
-:stw.as^l_st_di l_rc_limm, [l_rb, l_s9shift1] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=2 & l_s9shift1 & l_st_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+:st.as^l_st_di l_rc_limm, [l_rb, l_s9shift2] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=0 & l_s9shift2 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+:stw.as^l_st_di l_rc_limm, [l_rb, l_s9shift1] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=2 & l_s9shift1 & l_st_di & l_rb) ... & l_rc_limm {
   local addr:4 = l_rb + l_s9shift1;
   *[ram]:2 addr = l_rc_limm:2;
 }
+:stw.as^l_st_di l_rc_limm, [l_rb, l_s9shift1] is (l_major_opcode=0x03 & l_st_addr_mode=3 & l_st_data_size=2 & l_s9shift1 & l_st_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
 
 # Decode instructions with opcode=0x04 to 0x08, with conditional execution.
 # Do not decode instructions which do not follow "if (condition) do_something" semantics:
@@ -1138,47 +1160,57 @@ with : (op4_phase=0 & l_major_opcode=0x04 & l_op4_ld_opcode=6) ... { # Do not de
     op4_ld_ra = sext(*[ram]:2 addr);
   }
 
-  :ld.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ld.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     l_rb = l_rb + l_rc_limm;
     op4_ld_ra = *[ram]:4 l_rb;
   }
-  :ldb.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ld.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldb.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     l_rb = l_rb + l_rc_limm;
     op4_ld_ra = zext(*[ram]:1 l_rb);
   }
-  :ldb.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldb.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldb.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     l_rb = l_rb + l_rc_limm;
     op4_ld_ra = sext(*[ram]:1 l_rb);
   }
-  :ldw.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldb.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldw.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     l_rb = l_rb + l_rc_limm;
     op4_ld_ra = zext(*[ram]:2 l_rb);
   }
-  :ldw.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldw.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldw.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     l_rb = l_rb + l_rc_limm;
     op4_ld_ra = sext(*[ram]:2 l_rb);
   }
+  :ldw.x.a^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=1 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
 
-  :ld.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ld.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     op4_ld_ra = *[ram]:4 l_rb;
     l_rb = l_rb + l_rc_limm;
   }
-  :ldb.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ld.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldb.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     op4_ld_ra = zext(*[ram]:1 l_rb);
     l_rb = l_rb + l_rc_limm;
   }
-  :ldb.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldb.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldb.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     op4_ld_ra = sext(*[ram]:1 l_rb);
     l_rb = l_rb + l_rc_limm;
   }
-  :ldw.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldb.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=1 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldw.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     op4_ld_ra = zext(*[ram]:2 l_rb);
     l_rb = l_rb + l_rc_limm;
   }
-  :ldw.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & (l_rb_high != 7 | l_rb_low_7 != 6) & l_rb) ... & l_rc_limm {
+  :ldw.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
+  :ldw.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb) ... & l_rc_limm {
     op4_ld_ra = sext(*[ram]:2 l_rb);
     l_rb = l_rb + l_rc_limm;
   }
+  :ldw.x.ab^op4_ld_di op4_ld_ra, [l_rb, l_rc_limm] is (l_op4_ld_addr_mode=2 & l_op4_ld_data_size=2 & l_op4_ld_sign_ext=1 & op4_ld_ra & op4_ld_di & l_rb_high=7 & l_rb_low_7=6 & l_rb) ... & l_rc_limm unimpl
 
   :ld.as^op4_ld_di op4_ld_ra, [l_rb_limm, l_rc_limm] is (l_op4_ld_addr_mode=3 & l_op4_ld_data_size=0 & l_op4_ld_sign_ext=0 & op4_ld_ra & op4_ld_di) ... & l_rb_limm & l_rc_limm {
     local addr:4 = l_rb_limm + (l_rc_limm << 2);
