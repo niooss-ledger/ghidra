@@ -1079,23 +1079,14 @@ with : op4_phase=1 & l_major_opcode=0x04 ... {
       update_flags_zn(op4_b_dst);
     }
     :abs op4_b_dst, op4_c_src is (l_ra_raw=0x09 & l_flag=0 & op4_b_dst) ... & op4_c_src {
-      if (op4_c_src s< 0) goto <negative>;
-      op4_b_dst = op4_c_src;
-      goto <end>;
-    <negative>
-      op4_b_dst = -op4_c_src;
-    <end>
+      local acond:1 = op4_c_src s< 0:4;
+      op4_b_dst = (op4_c_src * zext(acond == 0)) + (-op4_c_src * zext(acond != 0));
     }
     :abs.f op4_b_dst, op4_c_src is (l_ra_raw=0x09 & l_flag=1 & op4_b_dst) ... & op4_c_src {
       N = op4_c_src == 0x80000000:4;
       V = N;
-      C = op4_c_src s< 0;
-      if (C) goto <negative>;
-      op4_b_dst = op4_c_src;
-      goto <end>;
-    <negative>
-      op4_b_dst = -op4_c_src;
-    <end>
+      C = op4_c_src s< 0:4;
+      op4_b_dst = (op4_c_src * zext(C == 0)) + (-op4_c_src * zext(C != 0));
       Z = op4_b_dst == 0:4;
     }
     :not op4_b_dst, op4_c_src is (l_ra_raw=0x0a & l_flag=0 & op4_b_dst) ... & op4_c_src {
@@ -1545,12 +1536,8 @@ with : op4_phase=1 {
   s_rb = s_rc & 0xffff;
 }
 :abs_s s_rb, s_rc is s_major_opcode=0x0f & s_u5=0x11 & s_rb & s_rc {
-  if (s_rc s< 0) goto <negative>;
-  s_rb = s_rc;
-  goto <end>;
-<negative>
-  s_rb = -s_rc;
-<end>
+  local acond:1 = s_rc s< 0:4;
+  s_rb = (s_rc * zext(acond == 0)) + (-s_rc * zext(acond != 0));
 }
 :not_s s_rb, s_rc is s_major_opcode=0x0f & s_u5=0x12 & s_rb & s_rc {
   s_rb = ~s_rc;
