@@ -1399,8 +1399,7 @@ with : l_major_opcode=0x04 ... {
       op4_b_dst = op4_c_src s>> 1;
     }
     :asr.f op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x01 & l_flag=1 & op4_b_dst) ... & op4_c_src {
-      local lsb:4 = op4_c_src & 1:4;
-      C = lsb:1;
+      C = (op4_c_src & 1:4) != 0:4;
       op4_b_dst = op4_c_src s>> 1;
       update_flags_zn(op4_b_dst);
     }
@@ -1408,21 +1407,25 @@ with : l_major_opcode=0x04 ... {
       op4_b_dst = op4_c_src >> 1;
     }
     :lsr.f op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x02 & l_flag=1 & op4_b_dst) ... & op4_c_src {
-      local lsb:4 = op4_c_src & 1:4;
-      C = lsb:1;
+      C = (op4_c_src & 1:4) != 0:4;
       op4_b_dst = op4_c_src >> 1;
       update_flags_zn(op4_b_dst);
     }
     :ror op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x03 & l_flag=0 & op4_b_dst) ... & op4_c_src {
       op4_b_dst = (op4_c_src >> 1) | (op4_c_src << 31);
     }
+    :ror.f op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x03 & l_flag=1 & op4_b_dst) ... & op4_c_src {
+      C = (op4_c_src & 1:4) != 0:4;
+      op4_b_dst = (op4_c_src >> 1) | (op4_c_src << 31);
+      update_flags_zn(op4_b_dst);
+    }
     :rrc op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x04 & l_flag=0 & op4_b_dst) ... & op4_c_src {
       op4_b_dst = (op4_c_src >> 1) | (zext(C) << 31);
     }
     :rrc.f op4_b_dst, op4_c_src, 1 is (l_ra_raw=0x04 & l_flag=1 & op4_b_dst) ... & op4_c_src {
-      local lsb:4 = op4_c_src & 1:4;
+      local carry:1 = (op4_c_src & 1:4) != 0:4;
       op4_b_dst = (op4_c_src >> 1) | (zext(C) << 31);
-      C = lsb:1;
+      C = carry;
       update_flags_zn(op4_b_dst);
     }
     :sexb op4_b_dst, op4_c_src is (l_ra_raw=0x05 & l_flag=0 & op4_b_dst) ... & op4_c_src {
@@ -1609,13 +1612,13 @@ with : l_major_opcode=0x05 ... {
   <next>
   }
   :asl.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
-    C = (op4_b_src & ((0x80000000 >> (op4_c_src[0,5])) << 1)) != 0;
+    C = (op4_b_src & ((0x80000000 >> (op4_c_src[0,5])) << 1)) != 0:4;
     op4_a = op4_b_src << (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   }
   :asl.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
-    C = (op4_b_src & ((0x80000000 >> (op4_c_src[0,5])) << 1)) != 0;
+    C = (op4_b_src & ((0x80000000 >> (op4_c_src[0,5])) << 1)) != 0:4;
     op4_a = op4_b_src << (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   <next>
@@ -1629,13 +1632,13 @@ with : l_major_opcode=0x05 ... {
   <next>
   }
   :lsr.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
-    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
+    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0:4;
     op4_a = op4_b_src >> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   }
   :lsr.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
-    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
+    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0:4;
     op4_a = op4_b_src >> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   <next>
@@ -1649,13 +1652,13 @@ with : l_major_opcode=0x05 ... {
   <next>
   }
   :asr.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
-    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
+    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0:4;
     op4_a = op4_b_src s>> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   }
   :asr.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
-    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
+    C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0:4;
     op4_a = op4_b_src s>> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
   <next>
@@ -1668,6 +1671,22 @@ with : l_major_opcode=0x05 ... {
     if (l_cc_not_value) goto <next>;
     local other_shift:4 = 32:4 - op4_c_src;
     op4_a = (op4_b_src >> (op4_c_src[0,5])) | (op4_b_src << (other_shift[0,5]));
+  <next>
+  }
+  :ror.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+    local shift_min1:4 = op4_c_src - 1:4;
+    C = op4_c_src != 0:4 && (op4_c_src & (1:4 << (shift_min1[0,5]))) != 0:4;
+    local other_shift:4 = 32:4 - op4_c_src;
+    op4_a = (op4_b_src >> (op4_c_src[0,5])) | (op4_b_src << (other_shift[0,5]));
+    update_flags_zn(op4_a);
+  }
+  :ror.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
+    if (l_cc_not_value) goto <next>;
+    local shift_min1:4 = op4_c_src - 1:4;
+    C = op4_c_src != 0:4 && (op4_c_src & (1:4 << (shift_min1[0,5]))) != 0:4;
+    local other_shift:4 = 32:4 - op4_c_src;
+    op4_a = (op4_b_src >> (op4_c_src[0,5])) | (op4_b_src << (other_shift[0,5]));
+    update_flags_zn(op4_a);
   <next>
   }
   :mul64 op4_b_src, op4_c_src is (l_sub_opcode6=0x04 & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src {
