@@ -645,7 +645,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src + op4_c_src;
   <next>
   }
-  :add^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :add.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     update_flags_add_cv(op4_b_src, op4_c_src);
     op4_a = op4_b_src + op4_c_src;
     update_flags_zn(op4_a);
@@ -665,7 +665,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src + op4_c_src + zext(C);
   <next>
   }
-  :adc^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :adc.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local sign_b:1 = (op4_b_src >> 31) != 0;
     local sign_c:1 = (op4_c_src >> 31) != 0;
     local new_C:1 = ((C == 0) && carry(op4_b_src, op4_c_src)) || ((C == 1) && (op4_b_src >= op4_b_src + op4_c_src + 1:4));
@@ -695,7 +695,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src - op4_c_src;
   <next>
   }
-  :sub^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :sub.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local result:4 = op4_b_src - op4_c_src;
     update_flags_sub_zncv(op4_b_src, op4_c_src, result);
     op4_a = result;
@@ -715,7 +715,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src - op4_c_src - zext(C);
   <next>
   }
-  :sbc^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :sbc.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local sub_b_c:4 = op4_b_src - op4_c_src;
     local old_C:4 = zext(C);
     C = (op4_b_src < op4_c_src) || ((old_C == 1:4) && (op4_b_src == op4_c_src));
@@ -741,7 +741,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src & op4_c_src;
   <next>
   }
-  :and^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x04 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :and.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x04 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src & op4_c_src;
     update_flags_zn(op4_a);
   }
@@ -759,7 +759,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src | op4_c_src;
   <next>
   }
-  :or^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x05 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :or.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x05 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src | op4_c_src;
     update_flags_zn(op4_a);
   }
@@ -777,7 +777,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src & ~op4_c_src;
   <next>
   }
-  :bic^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x06 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :bic.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x06 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src & ~op4_c_src;
     update_flags_zn(op4_a);
   }
@@ -795,7 +795,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src ^ op4_c_src;
   <next>
   }
-  :xor^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x07 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :xor.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x07 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src ^ op4_c_src;
     update_flags_zn(op4_a);
   }
@@ -815,7 +815,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src * zext(c_greatereq_b == 0:1) + op4_c_src * zext(c_greatereq_b);
   <next>
   }
-  :max^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x08 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :max.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x08 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     Z = op4_c_src == op4_b_src;
     N = (op4_b_src - op4_c_src) s< 0:4;
     C = op4_c_src s>= op4_b_src;
@@ -841,7 +841,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src * zext(c_lowereq_b == 0:1) + op4_c_src * zext(c_lowereq_b);
   <next>
   }
-  :min^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x09 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :min.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x09 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     Z = op4_c_src == op4_b_src;
     N = (op4_b_src - op4_c_src) s< 0:4;
     C = op4_c_src s<= op4_b_src;
@@ -865,7 +865,7 @@ with : l_major_opcode=0x04 ... {
     op4_b_dst = op4_c_src;
   <next>
   }
-  :mov^".f" op4_b_dst, op4_c_src is (l_sub_opcode6=0x0a & l_flag=1 & op4_b_dst) ... & op4_c_src {
+  :mov.f op4_b_dst, op4_c_src is (l_sub_opcode6=0x0a & l_flag=1 & op4_b_dst) ... & op4_c_src {
     update_flags_zn(op4_c_src);
     op4_b_dst = op4_c_src;
   }
@@ -911,7 +911,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_c_src - op4_b_src;
   <next>
   }
-  :rsub^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0e & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :rsub.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0e & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local result:4 = op4_c_src - op4_b_src;
     update_flags_sub_zncv(op4_c_src, op4_b_src, result);
     op4_a = result;
@@ -931,7 +931,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src | (1:4 << (op4_c_src[0,5]));
   <next>
   }
-  :bset^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0f & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :bset.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0f & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src | (1:4 << (op4_c_src[0,5]));
     update_flags_zn(op4_a);
   }
@@ -949,7 +949,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src & ~(1:4 << (op4_c_src[0,5]));
   <next>
   }
-  :bclr^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x10 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :bclr.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x10 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src & ~(1:4 << (op4_c_src[0,5]));
     update_flags_zn(op4_a);
   }
@@ -975,7 +975,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src ^ (1:4 << (op4_c_src[0,5]));
   <next>
   }
-  :bxor^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x12 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :bxor.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x12 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src ^ (1:4 << (op4_c_src[0,5]));
     update_flags_zn(op4_a);
   }
@@ -995,7 +995,7 @@ with : l_major_opcode=0x04 ... {
     op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
   <next>
   }
-  :bmsk^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :bmsk.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local c_src_plus_one:4 = op4_c_src + 1:4;
     op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
     update_flags_zn(op4_a);
@@ -1231,7 +1231,7 @@ with : l_major_opcode=0x04 {
     return [pcl];
   <next>
   }
-  :j^".f" ilink1 is l_sub_opcode6=0x20 & l_flag=1 & l_op_format=0 & l_rc_raw=29 & ilink1 {
+  :j.f ilink1 is l_sub_opcode6=0x20 & l_flag=1 & l_op_format=0 & l_rc_raw=29 & ilink1 {
     # get STATUS_L1 register at 0x0b * 4 = 0x2c
     local new_status:4 = *[auxregs]:4 (0x2c:2);
     Z = (new_status & (1 << 11)) != 0;
@@ -1253,7 +1253,7 @@ with : l_major_opcode=0x04 {
     goto [pcl];
   <next>
   }
-  :j^".f" ilink2 is l_sub_opcode6=0x20 & l_flag=1 & l_op_format=0 & l_rc_raw=30 & ilink2 {
+  :j.f ilink2 is l_sub_opcode6=0x20 & l_flag=1 & l_op_format=0 & l_rc_raw=30 & ilink2 {
     # get STATUS_L2 register at 0x0c * 4 = 0x30
     local new_status:4 = *[auxregs]:4 (0x30:2);
     Z = (new_status & (1 << 11)) != 0;
@@ -1610,7 +1610,7 @@ with : l_major_opcode=0x05 ... {
     op4_a = op4_b_src << (op4_c_src[0,5]);
   <next>
   }
-  :asl^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :asl.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x00 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     C = (op4_b_src & ((0x80000000 >> (op4_c_src[0,5])) << 1)) != 0;
     op4_a = op4_b_src << (op4_c_src[0,5]);
     update_flags_zn(op4_a);
@@ -1630,7 +1630,7 @@ with : l_major_opcode=0x05 ... {
     op4_a = op4_b_src >> (op4_c_src[0,5]);
   <next>
   }
-  :lsr^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :lsr.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x01 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
     op4_a = op4_b_src >> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
@@ -1650,7 +1650,7 @@ with : l_major_opcode=0x05 ... {
     op4_a = op4_b_src s>> (op4_c_src[0,5]);
   <next>
   }
-  :asr^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :asr.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x02 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     C = (op4_b_src & ((1:4 << (op4_c_src[0,5])) >> 1)) != 0;
     op4_a = op4_b_src s>> (op4_c_src[0,5]);
     update_flags_zn(op4_a);
@@ -1736,7 +1736,7 @@ with : l_major_opcode=0x05 ... {
     op4_a = 0x80000000:4;
   <next>
   }
-  :adds^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x06 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :adds.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x06 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     # Signed Add with Saturation and Flag Updates
     C = 0;
     V = scarry(op4_b_src, op4_c_src);
@@ -1804,7 +1804,7 @@ with : l_major_opcode=0x05 ... {
     op4_a = 0x80000000:4;
   <next>
   }
-  :subs^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x07 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
+  :subs.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x07 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     # Signed Subtraction with Saturation and Flag Updates
     Z = op4_b_src == op4_c_src;
     C = 0;
@@ -1859,7 +1859,7 @@ with : l_major_opcode=0x05 ... {
     :norm op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=0 & op4_b_dst) ... & op4_c_src {
       op4_b_dst = norm(op4_c_src);
     }
-    :norm^".f" op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=1 & op4_b_dst) ... & op4_c_src {
+    :norm.f op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=1 & op4_b_dst) ... & op4_c_src {
       update_flags_zn(op4_c_src);
       op4_b_dst = norm(op4_c_src);
     }
@@ -1867,7 +1867,7 @@ with : l_major_opcode=0x05 ... {
     :rnd16 op4_b_dst, op4_c_src is (l_ra_raw=0x03 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :abssw op4_b_dst, op4_c_src is (l_ra_raw=0x04 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :abss op4_b_dst, op4_c_src is (l_ra_raw=0x05 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
-    :negswop4_b_dst, op4_c_src is (l_ra_raw=0x06 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :negsw op4_b_dst, op4_c_src is (l_ra_raw=0x06 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :negs op4_b_dst, op4_c_src is (l_ra_raw=0x07 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
     :normw op4_b_dst, op4_c_src is (l_ra_raw=0x08 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
   }
