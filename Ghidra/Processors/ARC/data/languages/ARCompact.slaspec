@@ -1483,7 +1483,7 @@ with : l_major_opcode=0x04 ... {
       C = msb:1;
       update_flags_zn(op4_b_dst);
     }
-    :ex op4_b_dst, op4_c_src is (l_ra_raw=0x0c & l_flag=0 & op4_b_dst) ... & op4_c_src {
+    :ex^op4_ld_di op4_b_dst, op4_c_src is (l_ra_raw=0x0c & l_flag=0 & op4_b_dst & op4_ld_di) ... & op4_c_src {
       local old_b:4 = op4_b_dst;
       op4_b_dst = *[ram]:4 op4_c_src;
       *[ram]:4 op4_c_src = old_b;
@@ -1828,7 +1828,7 @@ with : l_major_opcode=0x05 ... {
     V = sborrow(op4_b_src, op4_c_src);
     if (V) goto <saturate>;
     op4_a = op4_b_src - op4_c_src;
-    N = op4_a s< 0;
+    N = op4_a s< 0:4;
     goto <next>;
   <saturate>
     if (op4_c_src s> 0:4) goto <saturate_negative>;
@@ -1847,7 +1847,7 @@ with : l_major_opcode=0x05 ... {
     V = sborrow(op4_b_src, op4_c_src);
     if (V) goto <saturate>;
     op4_a = op4_b_src - op4_c_src;
-    N = op4_a s< 0;
+    N = op4_a s< 0:4;
     goto <next>;
   <saturate>
     if (op4_c_src s> 0:4) goto <saturate_negative>;
@@ -1863,16 +1863,25 @@ with : l_major_opcode=0x05 ... {
   :divaw.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x08 & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
   :asls op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0a & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src unimpl
   :asls.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0a & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :asls.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0a & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :asls.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0a & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
   :asrs op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0b & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src unimpl
   :asrs.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0b & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :asrs.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0b & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :asrs.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x0b & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
   :addsdw op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x28 & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src unimpl
   :addsdw.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x28 & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :addsdw.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x28 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :addsdw.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x28 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
   :subsdw op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x29 & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src unimpl
   :subsdw.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x29 & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :subsdw.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x29 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src unimpl
+  :subsdw.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x29 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src unimpl
 
   # Extension Single Operand Instructions, 0x05, [0x2F, 0x00 - 0x3F]
   with : (l_sub_opcode6=0x2f & (l_op_format=0 | l_op_format=1)) ... {
     :swap op4_b_dst, op4_c_src is (l_ra_raw=0x00 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :swap.f op4_b_dst, op4_c_src is (l_ra_raw=0x00 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :norm op4_b_dst, op4_c_src is (l_ra_raw=0x01 & l_flag=0 & op4_b_dst) ... & op4_c_src {
       op4_b_dst = norm(op4_c_src);
     }
@@ -1881,12 +1890,19 @@ with : l_major_opcode=0x05 ... {
       op4_b_dst = norm(op4_c_src);
     }
     :sat16 op4_b_dst, op4_c_src is (l_ra_raw=0x02 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :sat16.f op4_b_dst, op4_c_src is (l_ra_raw=0x02 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :rnd16 op4_b_dst, op4_c_src is (l_ra_raw=0x03 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :rnd16.f op4_b_dst, op4_c_src is (l_ra_raw=0x03 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :abssw op4_b_dst, op4_c_src is (l_ra_raw=0x04 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :abssw.f op4_b_dst, op4_c_src is (l_ra_raw=0x04 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :abss op4_b_dst, op4_c_src is (l_ra_raw=0x05 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :abss.f op4_b_dst, op4_c_src is (l_ra_raw=0x05 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :negsw op4_b_dst, op4_c_src is (l_ra_raw=0x06 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :negsw.f op4_b_dst, op4_c_src is (l_ra_raw=0x06 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :negs op4_b_dst, op4_c_src is (l_ra_raw=0x07 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :negs.f op4_b_dst, op4_c_src is (l_ra_raw=0x07 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
     :normw op4_b_dst, op4_c_src is (l_ra_raw=0x08 & l_flag=0 & op4_b_dst) ... & op4_c_src unimpl
+    :normw.f op4_b_dst, op4_c_src is (l_ra_raw=0x08 & l_flag=1 & op4_b_dst) ... & op4_c_src unimpl
   }
 }
 
