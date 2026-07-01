@@ -231,7 +231,7 @@ l_s9: value is l_s9_low8 & l_s9_highbit [ value = l_s9_low8 + (l_s9_highbit << 8
 l_s9shift1: value is l_s9_low8 & l_s9_highbit [ value = (l_s9_low8 << 1) + (l_s9_highbit << 9); ] { export *[const]:4 value; }
 l_s9shift2: value is l_s9_low8 & l_s9_highbit [ value = (l_s9_low8 << 2) + (l_s9_highbit << 10); ] { export *[const]:4 value; }
 
-op1_u6_bit: value is l_u6 [ value = 1 << l_u6; ] { export *[const]:4 value; }
+op1_u6_bit: value is l_u6 [ value = 1 << (l_u6 & 0x1f); ] { export *[const]:4 value; }
 
 # Replace long immediate in registers
 s_rh_limm: limm is s_rh_high=7 & s_rh_low_7=6 ; limm { export *[const]:4 limm; }
@@ -984,30 +984,29 @@ with : l_major_opcode=0x04 ... {
   <next>
   }
   :bmsk op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src {
-    local c_src_plus_one:4 = op4_c_src + 1:4;
-    op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
+    local mask_width:1 = op4_c_src[0,5] + 1:1;
+    op4_a = op4_b_src & ((1:4 << mask_width) - 1:4);
   }
   :bmsk.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
-    local c_src_plus_one:4 = op4_c_src + 1:4;
-    op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
+    local mask_width:1 = op4_c_src[0,5] + 1:1;
+    op4_a = op4_b_src & ((1:4 << mask_width) - 1:4);
   <next>
   }
   :bmsk.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
-    local c_src_plus_one:4 = op4_c_src + 1:4;
-    op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
+    local mask_width:1 = op4_c_src[0,5] + 1:1;
+    op4_a = op4_b_src & ((1:4 << mask_width) - 1:4);
     update_flags_zn(op4_a);
   }
   :bmsk.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x13 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
-    local c_src_plus_one:4 = op4_c_src + 1:4;
-    op4_a = op4_b_src & ((1:4 << (c_src_plus_one[0,5])) - 1:4);
+    local mask_width:1 = op4_c_src[0,5] + 1:1;
+    op4_a = op4_b_src & ((1:4 << mask_width) - 1:4);
     update_flags_zn(op4_a);
   <next>
   }
   :add1 op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x14 & l_flag=0 & op4_a) ... & op4_b_src & op4_c_src {
     op4_a = op4_b_src + (op4_c_src << 1);
-    update_flags_zn(op4_a);
   }
   :add1.^l_cc_not_value op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x14 & l_flag=0 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
@@ -1483,7 +1482,7 @@ with : l_major_opcode=0x04 ... {
       C = msb:1;
       update_flags_zn(op4_b_dst);
     }
-    :ex^op4_ld_di op4_b_dst, op4_c_src is (l_ra_raw=0x0c & l_flag=0 & op4_b_dst & op4_ld_di) ... & op4_c_src {
+    :ex^op4_ld_di op4_b_dst, op4_c_src is (l_ra_raw=0x0c & op4_b_dst & op4_ld_di) ... & op4_c_src {
       local old_b:4 = op4_b_dst;
       op4_b_dst = *[ram]:4 op4_c_src;
       *[ram]:4 op4_c_src = old_b;
@@ -1675,7 +1674,7 @@ with : l_major_opcode=0x05 ... {
   }
   :ror.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     local shift_min1:4 = op4_c_src - 1:4;
-    C = op4_c_src != 0:4 && (op4_c_src & (1:4 << (shift_min1[0,5]))) != 0:4;
+    C = op4_c_src != 0:4 && (op4_b_src & (1:4 << (shift_min1[0,5]))) != 0:4;
     local other_shift:4 = 32:4 - op4_c_src;
     op4_a = (op4_b_src >> (op4_c_src[0,5])) | (op4_b_src << (other_shift[0,5]));
     update_flags_zn(op4_a);
@@ -1683,7 +1682,7 @@ with : l_major_opcode=0x05 ... {
   :ror.^l_cc_not_value^".f" op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x03 & l_flag=1 & l_op_format=3 & l_cc_not_value & op4_a) ... & op4_b_src & op4_c_src {
     if (l_cc_not_value) goto <next>;
     local shift_min1:4 = op4_c_src - 1:4;
-    C = op4_c_src != 0:4 && (op4_c_src & (1:4 << (shift_min1[0,5]))) != 0:4;
+    C = op4_c_src != 0:4 && (op4_b_src & (1:4 << (shift_min1[0,5]))) != 0:4;
     local other_shift:4 = 32:4 - op4_c_src;
     op4_a = (op4_b_src >> (op4_c_src[0,5])) | (op4_b_src << (other_shift[0,5]));
     update_flags_zn(op4_a);
@@ -1755,6 +1754,10 @@ with : l_major_opcode=0x05 ... {
   }
   :adds.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x06 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     # Signed Add with Saturation and Flag Updates
+    # ARCompact Programmer's Reference is ambiguous about how the Carry flag is generated
+    # (section "Flag Affect" tells it is set if the addition generated a carry but "Pseudo Code Example" tells "C_Flag = 0")
+    # As https://github.com/foss-for-synopsys-dwc-arc-processors/cgen/blob/eda052d5db32004d4a0d62b86d80072132c2c855/cpu/ARCompact.cpu#L2997
+    # implements adds with "(set cbit 0)", assume the pseudo code is actually correct.
     C = 0;
     V = scarry(op4_b_src, op4_c_src);
     if (V) goto <saturate>;
@@ -1824,6 +1827,10 @@ with : l_major_opcode=0x05 ... {
   :subs.f op4_a, op4_b_src, op4_c_src is (l_sub_opcode6=0x07 & l_flag=1 & op4_a) ... & op4_b_src & op4_c_src {
     # Signed Subtraction with Saturation and Flag Updates
     Z = op4_b_src == op4_c_src;
+    # ARCompact Programmer's Reference is ambiguous about how the Carry flag is generated:
+    # section "Flag Affected" tells it is set if the subtraction generated a carry but "Pseudo Code Example" tells "C_Flag = 0".
+    # As https://github.com/foss-for-synopsys-dwc-arc-processors/cgen/blob/eda052d5db32004d4a0d62b86d80072132c2c855/cpu/ARCompact.cpu#L3002
+    # implements subs with "(set cbit 0)", assume the pseudo code is actually correct.
     C = 0;
     V = sborrow(op4_b_src, op4_c_src);
     if (V) goto <saturate>;
